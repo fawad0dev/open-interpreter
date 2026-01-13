@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Interpreter - Web GUI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-brain"></i> Open Interpreter</h1>
+                <p class="version">v0.4.3</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="chat">
+                    <i class="fas fa-comments"></i> Chat
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="#" class="nav-item" data-page="history">
+                    <i class="fas fa-history"></i> Conversation History
+                </a>
+                <a href="#" class="nav-item" data-page="docs">
+                    <i class="fas fa-book"></i> Documentation
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">Disconnected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Page -->
+            <div id="chat-page" class="page active">
+                <div class="page-header">
+                    <h2>Chat Interface</h2>
+                    <div class="header-actions">
+                        <button id="new-chat-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Chat
+                        </button>
+                        <button id="clear-chat-btn" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div id="messages" class="messages"></div>
+                    
+                    <div class="input-area">
+                        <div class="input-wrapper">
+                            <textarea id="message-input" 
+                                      placeholder="Type your message here..." 
+                                      rows="3"></textarea>
+                            <div class="input-actions">
+                                <label class="file-upload-btn" title="Upload file">
+                                    <i class="fas fa-paperclip"></i>
+                                    <input type="file" id="file-upload" multiple hidden>
+                                </label>
+                                <button id="send-btn" class="btn btn-send">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-action" data-action="auto-run">
+                                <i class="fas fa-play-circle"></i>
+                                <span>Auto Run: <span id="auto-run-status">OFF</span></span>
+                            </button>
+                            <button class="quick-action" data-action="verbose">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Verbose: <span id="verbose-status">OFF</span></span>
+                            </button>
+                            <button class="quick-action" data-action="debug">
+                                <i class="fas fa-bug"></i>
+                                <span>Debug: <span id="debug-status">OFF</span></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings-page" class="page">
+                <div class="page-header">
+                    <h2>Settings</h2>
+                    <div class="header-actions">
+                        <button id="save-settings-btn" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                        <button id="reset-settings-btn" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset to Default
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-container">
+                    <!-- LLM Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-brain"></i> LLM Configuration</h3>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="model">Model</label>
+                                <input type="text" id="model" placeholder="gpt-4o">
+                            </div>
+                            <div class="form-group">
+                                <label for="temperature">Temperature</label>
+                                <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="api-key">API Key</label>
+                                <input type="password" id="api-key" placeholder="sk-...">
+                            </div>
+                            <div class="form-group">
+                                <label for="api-base">API Base URL</label>
+                                <input type="text" id="api-base" placeholder="https://api.openai.com/v1">
+                            </div>
+                            <div class="form-group">
+                                <label for="max-tokens">Max Tokens</label>
+                                <input type="number" id="max-tokens" placeholder="Auto">
+                            </div>
+                            <div class="form-group">
+                                <label for="context-window">Context Window</label>
+                                <input type="number" id="context-window" placeholder="Auto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Execution Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-cogs"></i> Execution Settings</h3>
+                        <div class="settings-grid">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="auto-run">
+                                <label for="auto-run">Auto Run Code (no confirmation)</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="verbose">
+                                <label for="verbose">Verbose Output</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="debug">
+                                <label for="debug">Debug Mode</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="offline">
+                                <label for="offline">Offline Mode</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="max-output">Max Output Length</label>
+                                <input type="number" id="max-output" value="2800">
+                            </div>
+                            <div class="form-group">
+                                <label for="safe-mode">Safe Mode</label>
+                                <select id="safe-mode">
+                                    <option value="off">Off</option>
+                                    <option value="ask">Ask</option>
+                                    <option value="auto">Auto</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-desktop"></i> Display Settings</h3>
+                        <div class="settings-grid">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="shrink-images" checked>
+                                <label for="shrink-images">Shrink Images</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="multi-line" checked>
+                                <label for="multi-line">Multi-line Input</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="plain-text">
+                                <label for="plain-text">Plain Text Display</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="highlight-active-line" checked>
+                                <label for="highlight-active-line">Highlight Active Line</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conversation Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-comments"></i> Conversation Settings</h3>
+                        <div class="settings-grid">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="conversation-history" checked>
+                                <label for="conversation-history">Save Conversation History</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="conversation-filename">Conversation Filename</label>
+                                <input type="text" id="conversation-filename" placeholder="Auto-generated">
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="contribute-conversation">
+                                <label for="contribute-conversation">Contribute Conversation (for AI improvement)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loop Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-sync"></i> Loop Settings</h3>
+                        <div class="settings-grid">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="loop">
+                                <label for="loop">Enable Loop Mode</label>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="loop-message">Loop Message</label>
+                                <textarea id="loop-message" rows="3">Proceed. You CAN run code on my machine. If the entire task I asked for is done, say exactly 'The task is done.' If you need some specific information (like username or password) say EXACTLY 'Please provide more information.' If it's impossible, say 'The task is impossible.' (If I haven't provided a task, say exactly 'Let me know what you'd like to do next.') Otherwise keep going.</textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="loop-breakers">Loop Breakers (comma-separated)</label>
+                                <input type="text" id="loop-breakers" value="The task is done.,The task is impossible.,Let me know what you'd like to do next.,Please provide more information.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="settings-section">
+                        <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
+                        <div class="settings-grid">
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="disable-telemetry">
+                                <label for="disable-telemetry">Disable Telemetry</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="os-mode">
+                                <label for="os-mode">OS Control Mode</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="speak-messages">
+                                <label for="speak-messages">Speak Messages (TTS)</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="sync-computer">
+                                <label for="sync-computer">Sync Computer</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="import-computer-api">
+                                <label for="import-computer-api">Import Computer API</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="import-skills">
+                                <label for="import-skills">Import Skills</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="skills-path">Skills Path</label>
+                                <input type="text" id="skills-path" placeholder="Path to skills directory">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="custom-instructions">Custom Instructions</label>
+                                <textarea id="custom-instructions" rows="3" placeholder="Add custom instructions for the AI..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="system-message">System Message</label>
+                                <textarea id="system-message" rows="4" placeholder="Override the default system message..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Page -->
+            <div id="history-page" class="page">
+                <div class="page-header">
+                    <h2>Conversation History</h2>
+                    <div class="header-actions">
+                        <button id="refresh-history-btn" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                        <button id="delete-all-history-btn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-container">
+                    <div id="history-list" class="history-list">
+                        <!-- History items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentation Page -->
+            <div id="docs-page" class="page">
+                <div class="page-header">
+                    <h2>Documentation</h2>
+                </div>
+
+                <div class="docs-container">
+                    <div class="docs-section">
+                        <h3>About Open Interpreter</h3>
+                        <p>Open Interpreter lets LLMs run code (Python, Javascript, Shell, and more) locally. You can chat with Open Interpreter through this web interface.</p>
+                        <p>This provides a natural-language interface to your computer's general-purpose capabilities:</p>
+                        <ul>
+                            <li>Create and edit photos, videos, PDFs, etc.</li>
+                            <li>Control a Chrome browser to perform research</li>
+                            <li>Plot, clean, and analyze large datasets</li>
+                            <li>And much more...</li>
+                        </ul>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Getting Started</h3>
+                        <ol>
+                            <li>Configure your LLM settings in the Settings page</li>
+                            <li>Enter your API key for your chosen model</li>
+                            <li>Start chatting in the Chat interface</li>
+                            <li>Review code before execution (unless auto-run is enabled)</li>
+                        </ol>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Features</h3>
+                        <ul>
+                            <li><strong>Multiple LLM Support:</strong> Works with OpenAI, Anthropic, local models, and more</li>
+                            <li><strong>Code Execution:</strong> Run Python, JavaScript, Shell, and other languages</li>
+                            <li><strong>Conversation History:</strong> Save and load previous conversations</li>
+                            <li><strong>Streaming Responses:</strong> See AI responses in real-time</li>
+                            <li><strong>Safe Mode:</strong> Review code before execution</li>
+                            <li><strong>Auto Run:</strong> Execute code automatically without confirmation</li>
+                            <li><strong>Custom Instructions:</strong> Add your own instructions for the AI</li>
+                            <li><strong>OS Control Mode:</strong> Advanced computer control capabilities</li>
+                        </ul>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Keyboard Shortcuts</h3>
+                        <ul>
+                            <li><kbd>Ctrl+Enter</kbd> - Send message</li>
+                            <li><kbd>Ctrl+N</kbd> - New chat</li>
+                            <li><kbd>Ctrl+K</kbd> - Clear chat</li>
+                            <li><kbd>Ctrl+S</kbd> - Save settings</li>
+                        </ul>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Security Notice</h3>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Warning:</strong> Open Interpreter executes code on your machine. Always review code before execution, especially when auto-run is enabled. Use safe mode when working with untrusted inputs.
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h3>Links</h3>
+                        <ul>
+                            <li><a href="https://github.com/OpenInterpreter/open-interpreter" target="_blank">GitHub Repository</a></li>
+                            <li><a href="https://docs.openinterpreter.com" target="_blank">Official Documentation</a></li>
+                            <li><a href="https://discord.gg/Hvz9Axh84z" target="_blank">Discord Community</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
